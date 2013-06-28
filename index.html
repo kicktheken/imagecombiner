@@ -1,4 +1,4 @@
-<h1>Image Sheet Combiner</h1>
+<h1>Image Combiner</h1>
 <label>Number of Columns: <input type="text" id="numcolumns"></label>
 <input type="file" id="upload"  multiple>
 <script type="text/javascript">
@@ -16,7 +16,7 @@ function handleFiles(files) {
 	canvas.width = canvas.height = 2048;
 	var context = canvas.getContext('2d');
 	var maxcols = parseInt(document.getElementById('numcolumns').value);
-	var maxx = 0, maxy = 0, ylimit = 0; col = 0, row = 0;
+	var maxx = 0, maxy = 0, ylimit = 0; col = 0, row = 0, width = 0;
 	var reader = new FileReader();
 
 	maxcols = maxcols <= 0 ? Number.POSITIVE_INFINITY : maxcols;
@@ -25,7 +25,12 @@ function handleFiles(files) {
 	function readFile(i) {
 		if (i >= files.length) {
 			console.log('done');
-			var image = canvas.toDataURL("image/png");
+			var buffer = document.createElement('canvas');
+			buffer.width = width;
+			buffer.height = maxy + ylimit;
+			var ctx = buffer.getContext('2d');
+			ctx.drawImage(canvas,0,0);
+			var image = buffer.toDataURL("image/png");
 			document.write("<img src='"+image+"'/>");
 			return;
 		}
@@ -40,17 +45,19 @@ function handleFiles(files) {
 			var image = new Image();
 			image.onload = function() {
 				this.onload = null;
-				ylimit = Math.max(ylimit, this.height);
-				context.drawImage(this,maxx,maxy);
-				maxx += this.width;
-				col++;
 				if (col >= maxcols || maxx > canvas.width) {
 					col = 0;
 					row++;
 					maxx = 0;
 					maxy += ylimit;
 					ylimit = this.height;
+				} else {
+					ylimit = Math.max(ylimit, this.height);
 				}
+				context.drawImage(this,maxx,maxy);
+				maxx += this.width;
+				width = Math.max(maxx,width);
+				col++;
 				readFile(i+1);
 			};
 			image.src = e.target.result;
