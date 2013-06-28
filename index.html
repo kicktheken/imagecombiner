@@ -45,7 +45,7 @@ function handleFiles(files) {
 			var image = new Image();
 			image.onload = function() {
 				this.onload = null;
-				if (col >= maxcols || maxx > canvas.width) {
+				if (col >= maxcols || maxx + this.width > canvas.width) {
 					col = 0;
 					row++;
 					maxx = 0;
